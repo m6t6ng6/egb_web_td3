@@ -130,10 +130,15 @@
         <button class="verde" type="submit">EJECUTAR</button>
     </form>
 
-    <!-- Nuevo botón para ver logs -->
-    <form action="{{ url_for('ver_logs') }}" method="get" target="_blank" class="abajo">
-        <button class="azul" type="submit">VER LOGS</button>
-    </form>
+    <!-- BOTONES DE LOGS -->
+    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+        <form action="{{ url_for('ver_logs') }}" method="get" target="_blank">
+            <button class="azul" type="submit">VER LOGS</button>
+        </form>
+        <form action="{{ url_for('ver_conexiones') }}" method="get" target="_blank">
+            <button class="azul" type="submit">VER CONEXIONES</button>
+        </form>
+    </div>
 
     <!-- PIE DE PÁGINA -->
     <footer style="
