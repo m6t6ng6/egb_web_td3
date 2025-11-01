@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, Response
 from datetime import datetime
 import os
 
@@ -17,6 +17,7 @@ ruta_estado = "current_state.csv"
 if not os.path.exists(ruta_historial):
     with open(ruta_historial, "w") as f:
         f.write("timestamp,set_target,set_minimo,set_maximo\n")
+
 
 @app.route('/')
 def index():
@@ -88,16 +89,48 @@ def ejecutar():
     global target, minimo, maximo
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # 1️⃣ Agregar al log CSV (modo append)
+    # 1️⃣ Agregar al CSV de logs
     with open(ruta_historial, "a") as f:
         f.write(f"{timestamp},set target {target},set minimo {minimo},set maximo {maximo}\n")
 
-    # 2️⃣ Sobrescribir el estado actual en CSV (una sola línea)
+    # 2️⃣ Sobrescribir estado actual
     with open(ruta_estado, "w") as f:
         f.write(f"set target {target}, set minimo {minimo}, set maximo {maximo}")
 
     print(f"✅ Log agregado en {ruta_historial} y estado sobrescrito en {ruta_estado}")
     return redirect(url_for('index'))
+
+
+# === VER LOGS EN UNA NUEVA PÁGINA ===
+@app.route('/ver_logs')
+def ver_logs():
+    """Muestra el contenido del archivo comandos_logs.csv en una nueva ventana."""
+    if not os.path.exists(ruta_historial):
+        return "<h3>Sin registros todavía.</h3>"
+
+    with open(ruta_historial, "r") as f:
+        lineas = f.readlines()
+
+    html = """
+    <html><head>
+    <title>Logs de comandos</title>
+    <style>
+        body { font-family: monospace; background-color: #f8f8f8; padding: 1rem; }
+        table { border-collapse: collapse; width: 100%; background: white; }
+        th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
+        th { background-color: #e8e8e8; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+    </style></head><body>
+    <h2>📜 Registro de comandos ejecutados</h2>
+    <table>
+    <tr><th>Timestamp</th><th>Target</th><th>Mínimo</th><th>Máximo</th></tr>
+    """
+    for linea in lineas[1:]:
+        campos = linea.strip().split(',')
+        if len(campos) == 4:
+            html += f"<tr><td>{campos[0]}</td><td>{campos[1]}</td><td>{campos[2]}</td><td>{campos[3]}</td></tr>"
+    html += "</table></body></html>"
+    return html
 
 
 if __name__ == '__main__':
